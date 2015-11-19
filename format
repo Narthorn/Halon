@@ -1,0 +1,63 @@
+Data structures found in .archive and .index files:
+
+endianness: little-endian
+
+header:
+
+  4 bytes : magic (KCAP)
+  4 bytes : version (1)
+512 bytes : ?
+  8 bytes : filesize in bytes
+  8 bytes : ?
+  8 bytes : filesystem table offset (from start of file)
+  4 bytes : number of entries in filesystem table
+  4 bytes : ? 
+  4 bytes : AARC/AIDX entry index in the filesystem table
+
+	filesystem table entry (16 bytes):
+		8bytes: block offset (from start of file)
+		8bytes: block size
+
+		or sometimes:
+
+		8bytes: another block index in fs table
+		8bytes: 0
+
+	AARC block (16 bytes):
+		4bytes: magic (CRAA)
+		4bytes: version
+		4bytes: block count
+		4bytes: block table root offset (from start of file)
+
+	AIDX block (16 bytes):
+		4bytes: magic (XDIA)
+		4bytes: version
+		4bytes: ?
+		4bytes: root dir block index in fs table 
+
+	directory block (8+8*dirs+56*files+?*names bytes):
+		4bytes: dir count
+		4bytes: file count
+		dirs array (8 bytes per entry):
+			4bytes: name offset (from start of name array)
+			4bytes: dir block index in fs table
+		files array (56 bytes per entry):
+			4bytes: name offset	(from start of name array)
+			4bytes: compression type (1 = no compression, 3 = deflate (old, unused), 5 = weird lzma)
+			8bytes: ?
+			8bytes: uncompressed size
+			8bytes: compressed size
+			20bytes: hash
+			4bytes: padding (0)
+		names array (variable length):
+			?bytes: name
+
+	file data block (32 bytes):
+		 4bytes: block index in the fs table
+		20bytes: sha1 hash
+		 8bytes: filesize
+
+notes:
+
+	* filesystem blocks are aligned to 16byte boundaries
+	* there seems to be 16bytes of garbage (?) between file boundaries
