@@ -23,6 +23,7 @@ class Filesystem:
 			self.root = Directory('', None, self, self.index.root_dir_index)
 
 			self.find = self.root.find
+			self.extract = self.root.extract
 
 	def __getitem__(self, path=None):
 		return self.root[path]
@@ -129,16 +130,14 @@ class Directory:
 		for item in self.find('', recursive):
 			yield item.path
 
-	def extract(self, outpath='', basepath='', recursive=True):
+	def extract(self, basepath='', recursive=True):
 		subdir = os.path.join(basepath,self.name)
 		os.makedirs(subdir)
 		for file in self.files.values():
-			with open(os.path.join(subdir,file.name),'wb') as out:
-				out.write(file.read())	
+			file.extract(subdir)
 		if recursive:
 			for dir in self.dirs.values():
-				dir.extract(basepath=subdir)
-
+				dir.extract(subdir)
 
 	def __getitem__(self, path=None):
 		if not path:
@@ -200,6 +199,10 @@ class File:
 				return lzma.LZMADecompressor().decompress(contents[:5] + struct.pack('<Q', self.uncompressed_size) + contents[5:])
 		else:
 			raise FileNotFoundError("No %s.archive file." % os.path.basename(self.fs.basepath))
+
+	def extract(self, basepath=''):
+		with open(os.path.join(basepath,self.name),'wb') as out:
+			out.write(self.read())
 
 	def __str__(self):
 		return (
