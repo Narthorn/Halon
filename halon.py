@@ -122,19 +122,18 @@ class Directory:
 			name = names[name_offset:names.index(b'\0', name_offset)].decode('ascii')
 			self.files[name] = File(name, self, fs, *filedata)
 
-	#TODO make this a proper search and not a path hack
 	def find(self, path='', recursive=True):
 		for file in self.files.values():
-			if file.path.startswith(path):
+			if path in file.path:
 				yield file
 		for dir in self.dirs.values():
-			if same_prefix(path,dir.path):
+			if path in dir.path:
 				yield dir
-				if recursive:
-					yield from dir.find(path)
+			if recursive:
+				yield from dir.find(path)
 
-	def list(self, recursive=False):
-		for item in self.find('', recursive):
+	def list(self, path='', recursive=False):
+		for item in self.find(path, recursive):
 			yield item.path
 
 	def extract(self, basepath='', recursive=True):
