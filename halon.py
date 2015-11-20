@@ -14,8 +14,6 @@ def optopen(*args):
 	except FileNotFoundError:
 		yield None
 
-debug = None
-
 class Filesystem:
 	def __init__(self, basepath):
 
@@ -223,19 +221,36 @@ class File:
 	def __repr__(self):
 		return "<File('%s')>" % self.name
 
+debug = None
 
 if __name__ == "__main__":
 	import argparse
 
-	parser = argparse.ArgumentParser(description="List and extract directories and files from Wildstar archive files.")
-	parser.add_argument('path')
-	parser.add_argument('--debug', action="store_true")
+	parser = argparse.ArgumentParser(description="Explore and extract directories and files inside Wildstar archive files.")
+	parser.add_argument('archive')
+	parser.add_argument('command', choices=['find','list','extract'])
+	parser.add_argument('path', nargs='?', default='')
+	parser.add_argument('dest_path', nargs='?', default='')
+
+	parser.add_argument('--debug', '-d', action="store_true")
+	parser.add_argument('--recursive', '-r', action="store_true")
+
 	args = parser.parse_args()
 
 	debug = args.debug
-	basepath = args.path
 
-	patch = Filesystem(os.path.join(basepath,'Patch'))
-	client = Filesystem(os.path.join(basepath,'Client'))
-	clientdata = Filesystem(os.path.join(basepath,'ClientData'))
-	clientdata_en = Filesystem(os.path.join(basepath,'ClientDataEN'))
+	archive = Filesystem(args.archive)
+
+	if args.command == 'find':
+		for item in archive.find(args.path):
+			print(item.path)
+
+	elif args.command == 'list':
+		if args.recursive:
+			for item in archive[args.path].find():
+				print(item.path)
+		else:
+			print(archive[args.path])
+
+	elif args.command == 'extract':
+		archive[args.path].extract(args.dest_path)
