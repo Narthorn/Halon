@@ -4,8 +4,15 @@ import struct
 import codecs
 import os.path
 import lzma
+import contextlib
 
-from fileutils import optopen, same_prefix
+@contextlib.contextmanager
+def optopen(*args):
+	try:
+		with open(*args) as f:
+			yield f
+	except FileNotFoundError:
+		yield None
 
 debug = None
 
