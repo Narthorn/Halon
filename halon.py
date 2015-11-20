@@ -21,8 +21,8 @@ class Filesystem:
 
 		self.basepath,_ = os.path.splitext(basepath)
 
-		with open(basepath + '.index',   'rb') as index, \
-		  optopen(basepath + '.archive', 'rb') as data:
+		with open(self.basepath + '.index',   'rb') as index, \
+		  optopen(self.basepath + '.archive', 'rb') as data:
 
 			self.index = Archive(index)
 			self.data = Archive(data) if data else None
