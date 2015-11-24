@@ -8,13 +8,14 @@ Usage
 
 
 ```
-python3 halon.py [-rd] archive {find name | list [path] | extract [path] [dest_path]}
+python3 halon.py [-rd] archive {find name | list [path] | extract [path] [dest_path] | diff other_archive [path]}
 
-   find: Finds all files and folders whose path contains the given name inside the archive.
+   find: Find all files and folders whose path contains the given name inside the archive.
    list: List the contents of the folder given in path, or the entire archive if no path is given.
 extract: Extract from archive the folder given in path, optionally inside the folder given in dest_path.
+   diff: Show the removed/added/changed files and folders between two archives.
 
--r, --recursive : Enable recursing through subfolders for --list (already on by default for find and extract).
+-r, --recursive : Enable recursing through subfolders (on by default for find and extract).
 -d, --debug: Enable extra debugging info on archive and file objects (mostly useful in interactive mode).
 ```
 
@@ -38,6 +39,16 @@ UI/FloatText
 $ python3 halon.py Wildstar/Patch/ClientData.archive extract UI/FloatText wildstar_ui/
 $ ls wildstar_ui/FloatText
 FloatText.lua  FloatTextPanel.lua  FloatTextPanel.xml  TestFloatTextForms.xml  toc.xml
+```
+```
+$ python3 halon.py Wildstar.10760/Patch/ClientData.archive diff Wildstar.10894/Patch/ClientData.archive
+! UI (1 removed, 1 added, 879 changed)
+! Map (212 removed, 86 added, 4304 changed)
+! DB (0 removed, 1 added, 124 changed)
+! Sky (0 removed, 16 added, 1129 changed)
+! EnvMap (0 removed, 0 added, 67 changed)
+! Art (0 removed, 9 added, 91 changed)
+! Audio (1 removed, 36 added, 24 changed)
 ```
 
 

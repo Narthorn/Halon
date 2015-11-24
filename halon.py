@@ -5,6 +5,7 @@ import codecs
 import os.path
 import lzma
 import contextlib
+import collections
 
 @contextlib.contextmanager
 def optopen(*args):
@@ -221,6 +222,42 @@ class File:
 	def __repr__(self):
 		return "<File('%s')>" % self.name
 
+def diff(dir1,dir2, verbose=False):
+
+	d1 = frozenset(dir1.dirs)
+	d2 = frozenset(dir2.dirs)
+
+	for d in d1-d2:
+		yield '-', dir1.dirs[d]
+	for d in d2-d1:
+		yield '+', dir2.dirs[d]
+	for d in d1&d2:
+		if verbose:
+			yield from diff(dir1.dirs[d], dir2.dirs[d])
+		else:
+			r,a,c = diffcount(dir1.dirs[d], dir2.dirs[d])
+			if r > 0 or a > 0 or c > 0:
+				yield '!', (dir1.dirs[d], dir2.dirs[d]), (r,a,c)
+
+	f1 = frozenset(dir1.files)
+	f2 = frozenset(dir2.files)
+
+	for f in f1-f2:
+		yield '-', dir1.files[f]
+	for f in f2-f1:
+		yield '+', dir2.files[f]
+	for f in f1&f2:
+		file1 = dir1.files[f]
+		file2 = dir2.files[f]
+		if file1.sha1 != file2.sha1:
+			yield '!', (file1,file2)
+
+def diffcount(dir1,dir2):
+	diffs,*_ = tuple(zip(*diff(dir1,dir2,verbose=True))) or [[]]
+	c = collections.Counter(diffs)
+	return c['-'], c['+'], c['!']
+
+
 debug = None
 
 if __name__ == "__main__":
@@ -228,9 +265,20 @@ if __name__ == "__main__":
 
 	parser = argparse.ArgumentParser(description="Explore and extract directories and files inside Wildstar archive files.")
 	parser.add_argument('archive')
-	parser.add_argument('command', choices=['find','list','extract'])
-	parser.add_argument('path', nargs='?', default='')
-	parser.add_argument('dest_path', nargs='?', default='')
+	subparsers = parser.add_subparsers(dest="command")
+	find_parser = subparsers.add_parser('find')
+	find_parser.add_argument('path', nargs= '?', default='')
+
+	list_parser = subparsers.add_parser('list')
+	list_parser.add_argument("path", nargs= '?', default='')
+
+	extract_parser = subparsers.add_parser('extract')
+	extract_parser.add_argument('path', nargs= '?', default='')
+	extract_parser.add_argument('dest_path', nargs='?', default='')
+
+	diff_parser = subparsers.add_parser('diff')
+	diff_parser.add_argument('archive2')
+	diff_parser.add_argument('path', nargs='?', default='')
 
 	parser.add_argument('--debug', '-d', action="store_true")
 	parser.add_argument('--recursive', '-r', action="store_true")
@@ -254,3 +302,20 @@ if __name__ == "__main__":
 
 	elif args.command == 'extract':
 		archive[args.path].extract(args.dest_path)
+
+	elif args.command == 'diff':
+		a1 = archive
+		a2 = Filesystem(args.archive2)
+
+		for t,item,*count in diff(a1[args.path],a2[args.path], args.recursive):
+			if t == '-':
+				print("- %s" % item.path)
+			if t == '+':
+				print("+ %s" % item.path)
+			if t == '!':
+				item,_ = item
+				if isinstance(item, File):
+					print("! %s" % item.path)
+				if isinstance(item, Directory):
+					print("! %s (%d removed, %d added, %d changed)" % (item.path, *count[0]))
+
