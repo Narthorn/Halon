@@ -8,9 +8,9 @@ Usage
 
 
 ```
-python3 halon.py [-rd] archive {find name | list [path] | extract [path] [dest_path] | diff other_archive [path]}
+python3 halon.py [-rd] archive {find string [path] | list [path] | extract [path] [dest_path] | diff other_archive [path]}
 
-   find: Find all files and folders whose path contains the given name inside the archive.
+   find: Find all files and folders whose path contains the given string inside the archive, optionally starting at given path.
    list: List the contents of the folder given in path, or the entire archive if no path is given.
 extract: Extract from archive the folder given in path, optionally inside the folder given in dest_path.
    diff: Show the removed/added/changed files and folders between two archives.

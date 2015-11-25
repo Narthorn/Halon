@@ -267,6 +267,7 @@ if __name__ == "__main__":
 	parser.add_argument('archive')
 	subparsers = parser.add_subparsers(dest="command")
 	find_parser = subparsers.add_parser('find')
+	find_parser.add_argument('name')
 	find_parser.add_argument('path', nargs= '?', default='')
 
 	list_parser = subparsers.add_parser('list')
@@ -290,7 +291,7 @@ if __name__ == "__main__":
 	archive = Filesystem(args.archive)
 
 	if args.command == 'find':
-		for item in archive.find(args.path):
+		for item in archive[args.path].find(args.name):
 			print(item.path)
 
 	elif args.command == 'list':
