@@ -198,9 +198,9 @@ class File:
 
 			if self.compression == 1: # no compression
 				return contents
-			elif self.compression == 3: # old compression format 
-				raise NotImplemented("Compression type 3 (deflate) not implemented")
-			elif self.compression == 5: # weird lzma 
+			elif self.compression == 3: # old compression format
+				raise NotImplementedError("Compression type 3 (deflate) not implemented")
+			elif self.compression == 5: # weird lzma
 				return lzma.LZMADecompressor().decompress(contents[:5] + struct.pack('<Q', self.uncompressed_size) + contents[5:])
 		else:
 			raise FileNotFoundError("No %s.archive file." % os.path.basename(self.fs.basepath))
