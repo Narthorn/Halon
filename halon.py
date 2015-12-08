@@ -62,7 +62,7 @@ class Archive:
 		magic,version,*rest = struct.unpack('<4sIII', file.read(16))
 
 		if magic == b'CRAA':
-			block_count, block_table_index = rest 
+			block_count, block_table_index = rest
 			offset, blocksize = self.fs[block_table_index]
 			file.seek(offset)
 			self.blocks = {}
@@ -92,11 +92,11 @@ class Archive:
 
 class Directory:
 	def __init__(self, name, parent, fs, block_index):
-		
+
 		self.name = name
 		self.path = os.path.join(parent and parent.path or '', name)
 		self.parent = parent
-		self.fs = fs 
+		self.fs = fs
 		self.block_index = block_index
 		self.dirs = {}
 		self.files = {}
@@ -108,7 +108,7 @@ class Directory:
 
 		ndirs, nfiles = struct.unpack('<II', index_file.read(8))
 		dir_entries = [struct.unpack('<II', index_file.read(8)) for _ in range(ndirs)]
-		file_entries = [struct.unpack('<II8sQQ20s4x', index_file.read(56)) for _ in range(nfiles)] 
+		file_entries = [struct.unpack('<II8sQQ20s4x', index_file.read(56)) for _ in range(nfiles)]
 
 		remaining = block_size - (index_file.tell() - block_offset)
 		names = index_file.read(remaining)
@@ -154,7 +154,7 @@ class Directory:
 				return self.dirs[head].__getitem__(*tail)
 			if head in self.files:
 				return self.files[head]
-		
+
 			e = FileNotFoundError("Could not find %s" % head)
 			e.file = head
 			raise e
@@ -163,13 +163,13 @@ class Directory:
 			if path != e.file:
 				e.args = ("Could not find %s in path %s" % (e.file,path),)
 			raise
-	
+
 	def __str__(self):
 		return self.path + "\n" + "\n".join("\t%s" % item for i in (sorted(self.dirs),sorted(self.files)) for item in i)
 
 	def __repr__(self):
 		return "<Directory('%s', %d)>" % (self.path, self.block_index)
-	
+
 
 class File:
 	def __init__(self, name, parent, fs, *filedata):
@@ -185,11 +185,11 @@ class File:
 			self.debug["uncompressed"] = self.uncompressed_size
 			self.debug["compressed"] = self.compressed_size
 			self.debug["sha1"] = codecs.encode(self.sha1, 'hex')
-			self.debug["unknowns"] = codecs.encode(unk1, 'hex') 
+			self.debug["unknowns"] = codecs.encode(unk1, 'hex')
 
 	def read(self):
 		if self.fs.data:
-			data = self.fs.data	
+			data = self.fs.data
 			index, filesize = data.blocks[self.sha1]
 			offset, blocksize = data.fs[index]
 			with open(data.name, 'rb') as archive_file:
@@ -218,7 +218,7 @@ class File:
 		"	SHA1 hash: {sha1}\n"
 		"	Unknowns: {unknowns}"
 		).format(path=self.path, **self.debug) if debug else super().__str__()
-	
+
 	def __repr__(self):
 		return "<File('%s')>" % self.name
 
