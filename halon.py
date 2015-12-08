@@ -233,7 +233,7 @@ def diff(dir1,dir2, verbose=False):
 		yield '+', dir2.dirs[d]
 	for d in d1&d2:
 		if verbose:
-			yield from diff(dir1.dirs[d], dir2.dirs[d])
+			yield from diff(dir1.dirs[d], dir2.dirs[d], verbose=True)
 		else:
 			r,a,c = diffcount(dir1.dirs[d], dir2.dirs[d])
 			if r > 0 or a > 0 or c > 0:
