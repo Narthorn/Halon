@@ -2,32 +2,25 @@ Data structures found in .archive and .index files:
 
 endianness: little-endian
 
-header:
+Shared structures :
 
-  4 bytes : magic (KCAP)
-  4 bytes : version (1)
-512 bytes : ?
-  8 bytes : filesize in bytes
-  8 bytes : ?
-  8 bytes : filesystem table offset (from start of file)
-  4 bytes : number of entries in filesystem table
-  4 bytes : ? 
-  4 bytes : AARC/AIDX entry index in the filesystem table
+	header:
+
+	  4 bytes : magic (KCAP)
+	  4 bytes : version (1)
+	512 bytes : ?
+	  8 bytes : filesize in bytes
+	  8 bytes : ?
+	  8 bytes : filesystem table offset (from start of file)
+	  4 bytes : number of entries in filesystem table
+	  4 bytes : ? 
+	  4 bytes : AARC/AIDX entry index in the filesystem table
 
 	filesystem table entry (16 bytes):
-		8bytes: block offset (from start of file)
+		8bytes: block offset (from start of file) OR index of another entry
 		8bytes: block size
 
-		or sometimes:
-
-		8bytes: another block index in fs table
-		8bytes: 0
-
-	AARC block (16 bytes):
-		4bytes: magic (CRAA)
-		4bytes: version
-		4bytes: block count
-		4bytes: block table root offset (from start of file)
+Found in .index files :
 
 	AIDX block (16 bytes):
 		4bytes: magic (XDIA)
@@ -47,10 +40,18 @@ header:
 			8bytes: ?
 			8bytes: uncompressed size
 			8bytes: compressed size
-			20bytes: hash
+			20bytes: sha1 hash
 			4bytes: padding (0)
 		names array (variable length):
-			?bytes: name
+			?bytes: name (null-terminated string)
+
+Found in .archive files :
+
+	AARC block (16 bytes):
+		4bytes: magic (CRAA)
+		4bytes: version
+		4bytes: block count
+		4bytes: block table root offset (from start of file)
 
 	file data block (32 bytes):
 		 4bytes: block index in the fs table
