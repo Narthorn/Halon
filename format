@@ -1,8 +1,6 @@
-Data structures found in .archive and .index files:
+Data structures found in .archive and .index files.
 
-endianness: little-endian
-
-Shared structures :
+In both files:
 
 	header:
 
@@ -11,29 +9,29 @@ Shared structures :
 	512 bytes : ?
 	  8 bytes : filesize in bytes
 	  8 bytes : ?
-	  8 bytes : filesystem table offset (from start of file)
-	  4 bytes : number of entries in filesystem table
-	  4 bytes : ? 
-	  4 bytes : AARC/AIDX entry index in the filesystem table
+	  8 bytes : offset to start of block table (from start of file)
+	  4 bytes : number of entries in the block table
+	  4 bytes : ?
+	  4 bytes : index of the AARC/AIDX block in the block table
 
-	filesystem table entry (16 bytes):
+	block table entry (16 bytes):
 		8bytes: block offset (from start of file) OR index of another entry
 		8bytes: block size
 
-Found in .index files :
+In .index files:
 
 	AIDX block (16 bytes):
 		4bytes: magic (XDIA)
 		4bytes: version
 		4bytes: ?
-		4bytes: root dir block index in fs table 
+		4bytes: index of the root dir block in the block table
 
 	directory block (8+8*dirs+56*files+?*names bytes):
 		4bytes: dir count
 		4bytes: file count
 		dirs array (8 bytes per entry):
 			4bytes: name offset (from start of name array)
-			4bytes: dir block index in fs table
+			4bytes: index of dir block in block table
 		files array (56 bytes per entry):
 			4bytes: name offset	(from start of name array)
 			4bytes: compression type (1 = no compression, 3 = deflate (old, unused), 5 = weird lzma)
@@ -45,20 +43,22 @@ Found in .index files :
 		names array (variable length):
 			?bytes: name (null-terminated string)
 
-Found in .archive files :
+In .archive files:
 
 	AARC block (16 bytes):
 		4bytes: magic (CRAA)
 		4bytes: version
-		4bytes: block count
-		4bytes: block table root offset (from start of file)
+		4bytes: file count
+		4bytes: index of file table block in the block table
 
-	file data block (32 bytes):
-		 4bytes: block index in the fs table
-		20bytes: sha1 hash
-		 8bytes: filesize
+	file table block:
+		files array (32 bytes per entry):
+			 4bytes: data block index in the block table
+			20bytes: sha1 hash
+			 8bytes: filesize
 
 notes:
 
-	* filesystem blocks are aligned to 16byte boundaries
+	* fields are little-endian
+	* blocks are aligned to 16byte boundaries
 	* there seems to be 16bytes of garbage (?) between file boundaries
